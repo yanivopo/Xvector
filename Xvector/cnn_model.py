@@ -1,4 +1,3 @@
-import keras
 from keras.layers import Conv2D, MaxPool2D, Input, Dense, Flatten, BatchNormalization
 from keras import Model
 
