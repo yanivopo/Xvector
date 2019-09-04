@@ -22,13 +22,9 @@ class Cnn:
         conv2 = BatchNormalization()(conv2)
         maxpool2 = MaxPool2D(pool_size=(2, 2))(conv2)
         flat = Flatten()(maxpool2)
-        # avg_pool = GlobalAveragePooling2D()(maxpool2)
         dense = Dense(units=self.layer_size[2], activation=self.activation, kernel_initializer=self.initializer,
                       name='dense')(flat)
         dense = BatchNormalization()(dense)
-
-        # avg_pool = GlobalAveragePooling2D()(conv3)
-
         output = Dense(units=self.layer_size[3], activation='sigmoid', kernel_initializer=self.initializer,
                        name='output')(dense)
         model = Model(inputs, output)
