@@ -4,7 +4,7 @@ from keras import Model
 
 
 class Cnn:
-    def __init__(self, data_dim=(512, 299), activation='relu', initializer='glorot_uniform', layer_size=[10,16,20,100]):
+    def __init__(self, data_dim=(512, 299), activation='relu', initializer='glorot_uniform', layer_size=[10, 16, 20, 100]):
         self.data_dim = data_dim
         self.layer_size = layer_size
         self.activation = activation
