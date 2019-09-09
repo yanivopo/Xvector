@@ -5,6 +5,7 @@ import concurrent.futures
 import soundfile as sf
 import shutil
 from pydub import AudioSegment
+from matplotlib import pyplot as plt
 
 output_path = 'D:\\dataset\\woxceleb\\temp_yaniv'
 input_dir_path = 'D:\\dataset\\woxceleb\\train_split'
@@ -62,23 +63,76 @@ def reduce_dir(lt, output_dir=output_path, input_dir='D:\\dataset\\woxceleb\\yan
 def merge_wav_files(file1_path, file2_path, new_file_name='combined_sounds'):
     y1, sr1 = sf.read(file1_path)
     y2, sr2 = sf.read(file2_path)
-    y1_len_ms = len(y1)*1/sr1*1000
-    y2_len_ms = len(y2)*1/sr2*1000
-    max_len = min(y1_len_ms, y2_len_ms)
-    point_of_change = np.random.randint(low =6000 , high=max_len,size=1)
+    y1_len_ms = len(y1) * 1 / sr1 * 1000
+    y2_len_ms = len(y2) * 1 / sr2 * 1000
+    point_of_change_1 = np.random.randint(low=0, high=y1_len_ms, size=1)[0]
     file1 = AudioSegment.from_wav(file1_path)
     file2 = AudioSegment.from_wav(file2_path)
-    file1_part1 = file1[0:point_of_change]
-    file1_part2 = file1[point_of_change:y1_len_ms]
+    if point_of_change_1 < 6000:
+        file1_part1 = file1 + file1[0:point_of_change_1]
+        point_of_change_1_new = int(point_of_change_1 + y1_len_ms)
+    else:
+        file1_part1 = file1[0:point_of_change_1]
+        point_of_change_1_new = point_of_change_1
+    if point_of_change_1 > y1_len_ms - 6000:
+        file1_part2 = file1 + file1[point_of_change_1:y1_len_ms]
+    else:
+        file1_part2 = file1[point_of_change_1:y1_len_ms]
+    point_of_change_2 = int(point_of_change_1_new + y2_len_ms)
+
     combined_sounds = file1_part1 + file2 + file1_part2
     combined_sounds.export(new_file_name + '.wav', format="wav")
-    file_label = np.zeros([1, int(y1_len_ms+y2_len_ms)])
-    file_label[0, int(point_of_change):int(point_of_change + int(y2_len_ms))] = np.ones([1,int(y2_len_ms)])
-    change_point_list = [point_of_change]
-    with open(new_file_name+'.txt', 'w') as f:
+    change_point_list = [point_of_change_1_new, point_of_change_2]
+    with open(new_file_name + '.txt', 'w') as f:
         for item in change_point_list:
             f.write("%s\n" % item)
-    return file_label, point_of_change
+    return change_point_list
+
+
+def find_peaks(mse, window=10, treshold=0.7):
+    weights = np.repeat(1.0, window) / window
+    mse_smos = np.convolve(mse, weights, 'valid')
+    mse_smos_norm = mse_smos / max(mse_smos)
+    #    plt.figure()
+    #    plt.plot(mse_smos_norm)
+
+    if_big_treshold = mse_smos_norm > treshold
+    index_big_treshold = np.where(if_big_treshold)[0]
+
+    start_inx = []
+    end_inx = []
+    flag = 1
+    for i in range(len(index_big_treshold)):
+        if flag:
+            start_inx.append(index_big_treshold[i])
+        if i != (len(index_big_treshold) - 1):
+            if index_big_treshold[i] + 1 == index_big_treshold[i + 1]:
+                flag = 0
+            else:
+                end_inx.append(index_big_treshold[i])
+                flag = 1
+        else:
+            end_inx.append(index_big_treshold[i])
+
+    peak_points = []
+    for i in range(len(start_inx)):
+        peak_points.append(start_inx[i] + np.argmax(mse_smos[start_inx[i]:end_inx[i]]) + int(window / 2))
+    plt.figure()
+    plt.plot(mse)
+    mse_smos_correct = np.roll(mse_smos, int(window / 2))
+    plt.plot(mse_smos_correct, '-rD', markevery=peak_points)
+    peak_points_sr = p_2_x(np.array(peak_points)) * 16
+    return peak_points_sr.tolist()
+
+
+def x_2_p(x):
+    p = ((x - 6000) // 1000 + 3) * 10 - 1
+    return p
+
+
+def p_2_x(p):
+    x = ((p + 1) // 10 - 3) * 1000 + 6000
+    return x
 
 
 if __name__ == '__main__':
@@ -103,8 +157,3 @@ if __name__ == '__main__':
     output_dir = "C:\\Users\\USER\\Desktop\\Master\\Xvector\\data\\merge_wav\\"
     out_merge_file = 'merge'
     merge_wav_files(file_1, file_2, output_dir + out_merge_file)
-    pass
-
-
-
-

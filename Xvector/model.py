@@ -59,7 +59,6 @@ class Xvector():
         return history
 
     def evaluate_model(self, number_of_batch=1, dir_name='temp_train', top_of_k=5):
-        #   model_load=load_keras_model(model_save_name)
         a = np.empty((number_of_batch * 16, 3, 100))
 
         index_of_file = np.random.choice(np.arange(100), number_of_batch)
@@ -109,9 +108,3 @@ class Xvector():
             s2 = self.predict_embedded(fft_part_2)
             mse.append(np.linalg.norm(s1 - s2))
         return np.array(mse)
-
-
-
-
-
-
