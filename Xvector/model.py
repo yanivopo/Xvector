@@ -9,6 +9,7 @@ import numpy as np
 from tqdm import tqdm
 import pickle
 import os
+#from keras.utils import plot_model
 
 
 def triplet_loss(y_true, y_pred):
@@ -19,7 +20,7 @@ def triplet_loss(y_true, y_pred):
     return triplet_loss_out
 
 
-class Xvector():
+class Xvector:
     def __init__(self, data_dim=(512, 299), optimizer='adam', layer_size=[10, 16, 20, 100], epochs=30):
         self.data_dim = data_dim
         self.layer_size = layer_size
@@ -93,7 +94,7 @@ class Xvector():
         return self.embed_model.predict(data)
 
     def mse_sliding_window(self, wave_file):
-        y, sr = sf.read(wave_file)
+        y, sr = sf.read(wave_file)           # TODO check for mono audion and SAMPLE RATE - 16000
         N = sr * 3     # 3 second the size of windows
         mil_sec = sr // 10
         mse = []
@@ -108,3 +109,8 @@ class Xvector():
             s2 = self.predict_embedded(fft_part_2)
             mse.append(np.linalg.norm(s1 - s2))
         return np.array(mse)
+
+
+if __name__ == '__main__':
+    xvector = Xvector()
+#    plot_model(xvector.model, to_file='Xvector_model.png')

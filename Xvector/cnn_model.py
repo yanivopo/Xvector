@@ -1,6 +1,7 @@
 import keras
 from keras.layers import Conv2D, MaxPool2D, Input, Dense, Flatten, BatchNormalization
 from keras import Model
+#from keras.utils import plot_model
 
 
 class Cnn:
@@ -34,3 +35,4 @@ class Cnn:
 
 if __name__ == '__main__':
     cnn = Cnn()
+#    plot_model(cnn.model, to_file='cnn_model.png')

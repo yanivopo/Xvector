@@ -116,7 +116,7 @@ def find_peaks(mse, window=10, treshold=0.7):
 
     peak_points = []
     for i in range(len(start_inx)):
-        peak_points.append(start_inx[i] + np.argmax(mse_smos[start_inx[i]:end_inx[i]]) + int(window / 2))
+        peak_points.append(start_inx[i] + np.argmax(mse_smos[start_inx[i]:end_inx[i]+1]) + int(window / 2))
     plt.figure()
     plt.plot(mse)
     mse_smos_correct = np.roll(mse_smos, int(window / 2))
@@ -133,6 +133,16 @@ def x_2_p(x):
 def p_2_x(p):
     x = ((p + 1) // 10 - 3) * 1000 + 6000
     return x
+
+
+def complete_sound(sound, sr, second=3):
+    number_of_copy = (second * sr // len(sound)) + 1
+    repeat_sound = np.repeat(sound, number_of_copy)
+    return truncate_sound(repeat_sound, sr, second)
+
+
+def truncate_sound(sound, sr, second=3):
+    return sound[:sr * second]
 
 
 if __name__ == '__main__':
@@ -152,8 +162,8 @@ if __name__ == '__main__':
     # with concurrent.futures.ProcessPoolExecutor() as executor:
     #     my_list = os.listdir(input_dir)
     #     executor.map(split_all, my_list)
-    file_1 = 'D:\\dataset\\woxceleb\\8.wav'
-    file_2 = 'D:\\dataset\\woxceleb\\14.wav'
+    file_1 = 'D:\\dataset\\woxceleb\\14.wav'
+    file_2 = 'D:\\dataset\\woxceleb\\6.wav'
     output_dir = "C:\\Users\\USER\\Desktop\\Master\\Xvector\\data\\merge_wav\\"
-    out_merge_file = 'merge'
+    out_merge_file = 'merge4'
     merge_wav_files(file_1, file_2, output_dir + out_merge_file)
