@@ -22,10 +22,11 @@ if DO_TRAINING:
     pass
 else:
     xvector_model.model.load_weights(os.path.join(model_dir_path, weight_name))
-xvector_model.evaluate_model(1, train_data_path)
+
+#xvector_model.evaluate_model(1, train_data_path)
 xvector_model.load_embedded_model()
-wave_file = ".\\data\\merge_wav\\1.wav"
-wave_txt = ".\\data\\merge_wav\\merge1.txt"
+wave_file = ".\\data\\merge_wav\\merge.wav"
+wave_txt = ".\\data\\merge_wav\\merge.txt"
 
 mse = xvector_model.mse_sliding_window(wave_file)
 plt.plot(mse)
