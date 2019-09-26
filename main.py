@@ -30,4 +30,41 @@ wave_txt = ".\\data\\merge_wav\\merge.txt"
 
 mse = xvector_model.mse_sliding_window(wave_file)
 plt.plot(mse)
+picks_predict = data_process_util.find_peaks(mse, window=6, treshold=0.7)
+
+picks_predict.insert(0, 0)
+
+y, sr = sf.read(wave_file)
+picks_predict.append(len(y))
+partition_list = []
+partition_size = len(picks_predict) - 1
+embedded_xvector_examples = np.zeros(shape=(partition_size, xvector_model.layer_size[-1]))
+for i in range(partition_size):
+    part_wav = y[picks_predict[i]:picks_predict[i+1]]
+    if len(part_wav) < 3 * sr:
+        part_wav_suit = data_process_util.complete_sound(part_wav, sr)
+    else:
+        part_wav_suit = data_process_util.truncate_sound(part_wav, sr)
+    fft_part = get_fft_spectrum(part_wav_suit)
+    fft_part = fft_part[np.newaxis, :, :, np.newaxis]
+    part_embedded_xvector = xvector_model.predict_embedded(fft_part)
+
+    partition_list.append([picks_predict[i], picks_predict[i+1]])
+    embedded_xvector_examples[i] = part_embedded_xvector
+
+
+def k_means(x_train, n_class=2, n_init=10):
+    k_mean = KMeans(n_clusters=n_class, n_init=n_init)
+    km_model = k_mean.fit(x_train)
+    return km_model
+
+
+from sklearn.cluster import AgglomerativeClustering
+clf = AgglomerativeClustering()
+clf.fit(embedded_xvector_examples)
+
+k_mean_model = k_means(embedded_xvector_examples)
+
+partition_in_second = [p / 16000 for p in picks_predict]
+
 plt.show()
