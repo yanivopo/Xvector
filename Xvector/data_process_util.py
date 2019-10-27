@@ -119,9 +119,14 @@ def find_peaks(mse, window=10, treshold=0.7):
         peak_points.append(start_inx[i] + np.argmax(mse_smos[start_inx[i]:end_inx[i]+1]) + int(window / 2))
     plt.figure()
     plt.plot(mse)
+    plt.xlabel("Time (ms)")
+    plt.ylabel("MSE")
+    plt.title("MSE between two sliding windows")
     mse_smos_correct = np.roll(mse_smos, int(window / 2))
     plt.plot(mse_smos_correct, '-rD', markevery=peak_points)
     peak_points_sr = p_2_x(np.array(peak_points)) * 16
+    plt.savefig('./pictures/mse')
+    plt.show()
     return peak_points_sr.tolist()
 
 

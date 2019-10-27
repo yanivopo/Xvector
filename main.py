@@ -7,9 +7,11 @@ import soundfile as sf
 from Xvector.wave_reader import get_fft_spectrum
 import numpy as np
 from sklearn.cluster import KMeans
+from pydub import AudioSegment
 
 DO_TRAINING = False
 model_dir_path = './save_model'
+output_dir_path = './output'
 weight_name = 'weights_full_model-improvement-41-0.79.hdf5'
 model_name = 'model.json'
 train_data_path = 'D:\\dataset\\woxceleb\\temp_train'
@@ -23,7 +25,7 @@ if DO_TRAINING:
 else:
     xvector_model.model.load_weights(os.path.join(model_dir_path, weight_name))
 
-#xvector_model.evaluate_model(1, train_data_path)
+# xvector_model.evaluate_model(1, train_data_path)
 xvector_model.load_embedded_model()
 wave_file = ".\\data\\merge_wav\\merge.wav"
 wave_txt = ".\\data\\merge_wav\\merge.txt"
@@ -59,12 +61,25 @@ def k_means(x_train, n_class=2, n_init=10):
     return km_model
 
 
-from sklearn.cluster import AgglomerativeClustering
-clf = AgglomerativeClustering()
-clf.fit(embedded_xvector_examples)
+def resegmentation_to_different_speaker(wave_file, partition_array, label, number_of_speaker = 2):
+    file1 = AudioSegment.from_wav(wave_file)
+    for i in range(number_of_speaker):
+        i_speaker_partiton = partition_array[np.where(label == i)]
+        for ii in range(i_speaker_partiton.shape[0]):
+            if ii == 0:
+                part_sounds = file1[int(i_speaker_partiton[ii][0] * 0.0625):int(i_speaker_partiton[ii][1] * 0.0625)]
+            else:
+                part_sounds += file1[int(i_speaker_partiton[ii][0] * 0.0625):int(i_speaker_partiton[ii][1] * 0.0625)]
+        part_sounds.export(output_dir_path + '/part_' + str(i) + '.wav', format="wav")
 
-k_mean_model = k_means(embedded_xvector_examples)
 
-partition_in_second = [p / 16000 for p in picks_predict]
+number_of_speaker = 2
+k_mean_model = k_means(embedded_xvector_examples, number_of_speaker)
+partition_array = np.array(partition_list)
+label = k_mean_model.labels_
+resegmentation_to_different_speaker(wave_file, partition_array, label, number_of_speaker)
 
-plt.show()
+
+
+
+
