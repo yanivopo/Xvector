@@ -21,28 +21,32 @@ if DO_TRAINING:
     training_generator = DataGeneratorLoad(data_dir_name=train_data_path, step_per_epoch=300)
     valid_generator = DataGeneratorLoad(data_dir_name=valid_data_path, step_per_epoch=10)
     xvector_model.fit(training_generator, valid_generator, save_model=False)
-    pass
 else:
     xvector_model.model.load_weights(os.path.join(model_dir_path, weight_name))
 
 # xvector_model.evaluate_model(1, train_data_path)
 xvector_model.load_embedded_model()
-wave_file = ".\\data\\merge_wav\\merge.wav"
-wave_txt = ".\\data\\merge_wav\\merge.txt"
+wave_file = ".\\data\\merge_wav\\merge1.wav"
+wave_txt = ".\\data\\merge_wav\\merge1.txt"
+
+with open(wave_txt, "r") as f_read:
+    picks_real_msec = f_read.readlines()
 
 mse = xvector_model.mse_sliding_window(wave_file)
 plt.plot(mse)
-picks_predict = data_process_util.find_peaks(mse, window=6, treshold=0.7)
+picks_predict_sr, picks_predict_msec, picks_predict_10msec, mse_smos_correct, peak_points, mse = data_process_util.find_peaks(mse, picks_real_msec, window=8, treshold=0.8)
+picks_real_10msec = [data_process_util.x_2_p(int(picks_real_msec[0].rstrip())), data_process_util.x_2_p(int(picks_real_msec[1].rstrip()))]
 
-picks_predict.insert(0, 0)
+
+picks_predict_sr.insert(0, 0)
 
 y, sr = sf.read(wave_file)
-picks_predict.append(len(y))
+picks_predict_sr.append(len(y))
 partition_list = []
-partition_size = len(picks_predict) - 1
+partition_size = len(picks_predict_sr) - 1
 embedded_xvector_examples = np.zeros(shape=(partition_size, xvector_model.layer_size[-1]))
 for i in range(partition_size):
-    part_wav = y[picks_predict[i]:picks_predict[i+1]]
+    part_wav = y[picks_predict_sr[i]:picks_predict_sr[i+1]]
     if len(part_wav) < 3 * sr:
         part_wav_suit = data_process_util.complete_sound(part_wav, sr)
     else:
@@ -51,7 +55,7 @@ for i in range(partition_size):
     fft_part = fft_part[np.newaxis, :, :, np.newaxis]
     part_embedded_xvector = xvector_model.predict_embedded(fft_part)
 
-    partition_list.append([picks_predict[i], picks_predict[i+1]])
+    partition_list.append([picks_predict_sr[i], picks_predict_sr[i+1]])
     embedded_xvector_examples[i] = part_embedded_xvector
 
 
@@ -75,10 +79,38 @@ def resegmentation_to_different_speaker(wave_file, partition_array, label, numbe
 
 number_of_speaker = 2
 k_mean_model = k_means(embedded_xvector_examples, number_of_speaker)
+
 partition_array = np.array(partition_list)
 label = k_mean_model.labels_
 resegmentation_to_different_speaker(wave_file, partition_array, label, number_of_speaker)
+partition_in_second = [p / 16000 for p in picks_predict_sr]
 
+
+labels_according_k_means = np.zeros(len(mse_smos_correct))
+peak_points.append(len(mse))
+peak_points_2 = peak_points.copy()
+peak_points_2.insert(0, 0)
+leb = list(k_mean_model.labels_)
+
+for i in range(len(peak_points)):
+    l = leb[i]
+    if l == 1:
+        print(peak_points_2[i])
+        print(peak_points_2[i+1])
+        labels_according_k_means[peak_points_2[i]:peak_points_2[i+1]] = 1
+
+plt.figure()
+plt.plot(mse)
+plt.grid()
+plt.xlabel('time [10ms]')
+plt.ylabel('MSE')
+plt.plot(labels_according_k_means+1)
+plt.plot(mse_smos_correct, '-gX', markevery=picks_predict_10msec[:-1], ms=20)
+plt.plot(mse_smos_correct, '-rD', markevery=picks_real_10msec)
+plt.show()
+
+print("The real changes between the speakers are {}".format(picks_real_10msec))
+print("The predict changes between the speakers are {}".format(picks_predict_10msec))
 
 
 

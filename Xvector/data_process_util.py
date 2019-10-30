@@ -89,7 +89,7 @@ def merge_wav_files(file1_path, file2_path, new_file_name='combined_sounds'):
     return change_point_list
 
 
-def find_peaks(mse, window=10, treshold=0.7):
+def find_peaks(mse, picks_real_msec, window=10, treshold=0.7):
     weights = np.repeat(1.0, window) / window
     mse_smos = np.convolve(mse, weights, 'valid')
     mse_smos_norm = mse_smos / max(mse_smos)
@@ -116,27 +116,29 @@ def find_peaks(mse, window=10, treshold=0.7):
 
     peak_points = []
     for i in range(len(start_inx)):
-        peak_points.append(start_inx[i] + np.argmax(mse_smos[start_inx[i]:end_inx[i]+1]) + int(window / 2))
-    plt.figure()
-    plt.plot(mse)
-    plt.xlabel("Time (ms)")
-    plt.ylabel("MSE")
-    plt.title("MSE between two sliding windows")
+        peak_points.append(start_inx[i] + np.argmax(mse_smos[start_inx[i]:end_inx[i] + 1]) + int(window / 2))
+    #    plt.figure()
+    #    plt.plot(mse)
+    #    plt.grid()
     mse_smos_correct = np.roll(mse_smos, int(window / 2))
-    plt.plot(mse_smos_correct, '-rD', markevery=peak_points)
+    # mse_smos_correct = mse_smos
+    #    plt.plot(mse_smos_correct, '-rD', markevery=peak_points)
     peak_points_sr = p_2_x(np.array(peak_points)) * 16
-    plt.savefig('./pictures/mse')
-    plt.show()
-    return peak_points_sr.tolist()
+    peak_points_msec = p_2_x(np.array(peak_points))
+    peak_points_sr.tolist()
+    peak_points_msec.tolist()
+    peak_points_sr = list(map(int, peak_points_sr))
+    peak_points_msec = list(map(int, peak_points_msec))
+    return peak_points_sr, peak_points_msec, peak_points, mse_smos_correct, peak_points, mse
 
 
 def x_2_p(x):
-    p = ((x - 6000) // 1000 + 3) * 10 - 1
+    p = (x - 3000) // 100
     return p
 
 
 def p_2_x(p):
-    x = ((p + 1) // 10 - 3) * 1000 + 6000
+    x = ((p + 1) / 10 - 3) * 1000 + 6000
     return x
 
 
