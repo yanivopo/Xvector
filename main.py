@@ -8,8 +8,10 @@ from Xvector.wave_reader import get_fft_spectrum
 import numpy as np
 from sklearn.cluster import KMeans
 from pydub import AudioSegment
+import vad
 
 DO_TRAINING = False
+VAD_USED = False
 model_dir_path = './save_model'
 output_dir_path = './output'
 weight_name = 'weights_full_model-improvement-41-0.79.hdf5'
@@ -26,8 +28,10 @@ else:
 
 # xvector_model.evaluate_model(1, train_data_path)
 xvector_model.load_embedded_model()
-wave_file = ".\\data\\merge_wav\\merge1.wav"
-wave_txt = ".\\data\\merge_wav\\merge1.txt"
+wave_file = ".\\data\\merge_wav\\merge2.wav"
+if VAD_USED:
+    wave_file = vad.main(3, wave_file)
+wave_txt = ".\\data\\merge_wav\\merge2.txt"
 
 with open(wave_txt, "r") as f_read:
     picks_real_msec = f_read.readlines()
@@ -111,6 +115,7 @@ plt.show()
 
 print("The real changes between the speakers are {}".format(picks_real_10msec))
 print("The predict changes between the speakers are {}".format(picks_predict_10msec))
+
 
 
 
