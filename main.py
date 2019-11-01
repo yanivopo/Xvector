@@ -28,10 +28,10 @@ else:
 
 # xvector_model.evaluate_model(1, train_data_path)
 xvector_model.load_embedded_model()
-wave_file = ".\\data\\merge_wav\\merge2.wav"
+wave_file = ".\\data\\merge_wav\\merge.wav"
 if VAD_USED:
     wave_file = vad.main(3, wave_file)
-wave_txt = ".\\data\\merge_wav\\merge2.txt"
+wave_txt = ".\\data\\merge_wav\\merge.txt"
 
 with open(wave_txt, "r") as f_read:
     picks_real_msec = f_read.readlines()

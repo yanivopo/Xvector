@@ -8,7 +8,7 @@ from sklearn.manifold import TSNE
 from tqdm import tqdm
 from sklearn.decomposition import PCA
 
-IS_TRAIN = False
+IS_TRAIN = True
 model_dir_path = './save_model'
 weight_name = 'weights_full_model-improvement-41-0.79.hdf5'
 model_name = 'model.json'

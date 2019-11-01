@@ -15,5 +15,6 @@ SoundFile==0.10.2
 tensorflow==1.13.1
 tensorflow-estimator==1.13.0
 tqdm==4.35.0
+webrtcvad==2.0.10
 
 
