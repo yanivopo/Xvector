@@ -5,6 +5,7 @@ import concurrent.futures
 import soundfile as sf
 import shutil
 from pydub import AudioSegment
+import argparse
 from matplotlib import pyplot as plt
 
 output_path = 'D:\\dataset\\woxceleb\\temp_yaniv'
@@ -153,8 +154,15 @@ def truncate_sound(sound, sr, second=3):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Example with long option names')
+    parser.add_argument('-f', '--first_file', required=True, help="path to first audio")
+    parser.add_argument('-s', '--second_file',required=True, help="path to second audio" )
+    parser.add_argument('-o', '--output_dir', required=True, help ="dir for output merge file")
+    parser.add_argument('-n', '--name_output_file', default='new_merge', help="dir for output merge file")
 
-    # input_dir = 'D:\\dataset\\woxceleb\\train_split'
+    args = parser.parse_args()
+
+                        # input_dir = 'D:\\dataset\\woxceleb\\train_split'
     # with concurrent.futures.ProcessPoolExecutor() as executor:
     #     dir_list = os.listdir(input_dir)
     #     dir_list = dir_list[:10]
@@ -169,8 +177,8 @@ if __name__ == '__main__':
     # with concurrent.futures.ProcessPoolExecutor() as executor:
     #     my_list = os.listdir(input_dir)
     #     executor.map(split_all, my_list)
-    file_1 = 'D:\\dataset\\woxceleb\\14.wav'
-    file_2 = 'D:\\dataset\\woxceleb\\6.wav'
-    output_dir = "C:\\Users\\USER\\Desktop\\Master\\Xvector\\data\\merge_wav\\"
-    out_merge_file = 'merge4'
+    file_1 = args.first_file   # 'D:\\dataset\\woxceleb\\14.wav'
+    file_2 = args.second_file  # 'D:\\dataset\\woxceleb\\6.wav'
+    output_dir = args.output_dir  # "C:\\Users\\USER\\Desktop\\Master\\Xvector\\data\\merge_wav\\"
+    out_merge_file = args.name_output_file  # 'merge4'
     merge_wav_files(file_1, file_2, output_dir + out_merge_file)
