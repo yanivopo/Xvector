@@ -7,7 +7,7 @@ numpy==1.16.3
 pandas==0.24.2
 PyAudio==0.2.11
 pydub==0.23.1
-requests==2.21.0
+requests==2.31.0
 scikit-learn==0.21.1
 scipy==1.2.1
 six==1.12.0
